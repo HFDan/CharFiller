@@ -15,7 +15,6 @@ std::string FileName;
 std::ofstream File;
 unsigned int SizeMode;
 
-
 void clear() {
 	std::cout << "\x1B[2J\x1B[H";
 }
