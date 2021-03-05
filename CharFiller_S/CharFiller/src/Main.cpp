@@ -64,13 +64,38 @@ int main(int argc, char* argv[]) {
 		for (int i = 0; i < std::stoi(Size); i++) {
 			File << "a";
 		}
+		std::cout << "Done!\n" << std::stoi(Size) << " B\n";
 		File.close();
-		exit(0);
+		break;
+
+	case 1:
+		for (int i = 0; i < std::stoi(Size)*1024; i++) {
+			File << "a";
+		}
+		std::cout << "Done!\n" << std::stoi(Size)*1024 << " B\n";
+		File.close();
+		break;
+
+	case 2:
+		for (int i = 0; i < std::stoi(Size) * 1048576; i++) {
+			File << "a";
+		}
+		std::cout << "Done!\n" << std::stoi(Size) * 1048576 << " B\n";
+		File.close();
+		break;
+
+	case 3:
+		for (int i = 0; i < std::stoi(Size) * 1073741824; i++) {
+			File << "a";
+		}
+		std::cout << "Done!\n" << std::stoi(Size) * 1073741824 << " B\n";
+		File.close();
 		break;
 
 	default:
+		std::cerr << "\aERROR!";
 		exit(4);
 		break;
 	}
-
+	exit(0);
 }
