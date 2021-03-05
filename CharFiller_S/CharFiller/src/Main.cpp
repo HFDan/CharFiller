@@ -1,8 +1,11 @@
-#define VERSION "0.0.1"
+#define VERSION "0.1.0-beta-multithreading"
 
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <future>
+#include <mutex>
+#include <thread>
 
 using string = std::string;
 
@@ -14,9 +17,26 @@ std::string Size;
 std::string FileName;
 std::ofstream File;
 unsigned int SizeMode;
+static std::mutex FileMutex;
+std::vector<std::future<void>> futures;
 
+
+/*
+Clears the console
+*/
 void clear() {
 	std::cout << "\x1B[2J\x1B[H";
+}
+
+/*
+Writes asynchronously to a file using mutexes
+@param	std::mutex&	mut:	mutex reference
+@param	std::ofstream&	file:	file to write to
+@param	std::string	write:	string to write in file
+*/
+static void WriteToFile_Async(std::mutex& mut, std::ofstream& file, std::string write) {
+	std::lock_guard<std::mutex> lock(mut);
+	file << write;
 }
 
 int main(int argc, char* argv[]) {
@@ -61,33 +81,69 @@ int main(int argc, char* argv[]) {
 	{
 
 	case 0:
-		for (int i = 0; i < std::stoi(Size); i++) {
+		/*for (int i = 0; i < std::stoi(Size); i++) { // Not Multithreaded!
 			File << "a";
+		}*/
+
+		for (int i = 0; i < std::stoi(Size); i++) {
+			futures.push_back(std::async(std::launch::async, []() {
+				
+				WriteToFile_Async(FileMutex, File, "a");
+
+			}));
 		}
+
 		std::cout << "Done!\n" << std::stoi(Size) << " B\n";
 		File.close();
 		break;
 
 	case 1:
-		for (int i = 0; i < std::stoi(Size)*1024; i++) {
+		/*for (int i = 0; i < std::stoi(Size)*1024; i++) { // Not Multithreaded!
 			File << "a";
+		}*/
+
+		for (int i = 0; i < std::stoi(Size) * 1024; i++) {
+			futures.push_back(std::async(std::launch::async, []() {
+
+				WriteToFile_Async(FileMutex, File, "a");
+
+			}));
 		}
+
 		std::cout << "Done!\n" << std::stoi(Size)*1024 << " B\n";
 		File.close();
 		break;
 
 	case 2:
-		for (int i = 0; i < std::stoi(Size) * 1048576; i++) {
+		/*for (int i = 0; i < std::stoi(Size) * 1048576; i++) { // Not Multithreaded!
 			File << "a";
+		}*/
+
+		for (int i = 0; i < std::stoi(Size) * 1048576; i++) {
+			futures.push_back(std::async(std::launch::async, []() {
+
+				WriteToFile_Async(FileMutex, File, "a");
+
+			}));
 		}
+
 		std::cout << "Done!\n" << std::stoi(Size) * 1048576 << " B\n";
 		File.close();
 		break;
 
 	case 3:
-		for (int i = 0; i < std::stoi(Size) * 1073741824; i++) {
+		/*for (int i = 0; i < std::stoi(Size) * 1073741824; i++) { // Not Multithreaded
 			File << "a";
+		}*/
+
+		for (int i = 0; i < std::stoi(Size) * 1073741824; i++) {
+			futures.push_back(std::async(std::launch::async, []() {
+
+				WriteToFile_Async(FileMutex, File, "a");
+
+			}));
 		}
+
 		std::cout << "Done!\n" << std::stoi(Size) * 1073741824 << " B\n";
 		File.close();
 		break;
