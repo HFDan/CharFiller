@@ -1,5 +1,4 @@
-#define VERSION "0.1.0-beta"
-#define BRANCH "multithreading"
+#define VERSION "0.1.0"
 
 #include <iostream>
 #include <string>
