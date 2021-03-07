@@ -8,11 +8,14 @@ Due to the fact that the app is not multithreaded, it is currently very slow whe
 
 ## Usage
 
-`-F <Filename>`
+`-F [Filename]`
 
-`-S <Size>`
+`-S [Size]`
+
+`-T [Thread Number]`
 
 # Roadmap
 
 - [x] File Sizes
-- [ ] Multithreading 
+- [x] Multithreading 
+- [ ] Linux Support
