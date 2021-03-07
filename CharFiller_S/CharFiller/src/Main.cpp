@@ -1,10 +1,10 @@
-#define VERSION "0.1.0-beta-multithreading"
+#define VERSION "0.1.0-beta"
+#define BRANCH "multithreading"
 
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <future>
-#include <mutex>
 #include <thread>
 
 using string = std::string;
@@ -13,13 +13,17 @@ enum SizeMode {
 	B = 0, KB = 1, MB = 2, GB = 3
 };
 
-std::string Size;
-std::string FileName;
-std::ofstream File;
-unsigned int SizeMode;
-static std::mutex FileMutex;
-std::vector<std::future<void>> futures;
+#pragma region Varaibles
 
+std::string Size; // File size
+std::string FileName = "CharFiller_Output.txt"; // Name of file to write
+unsigned int SizeMode; // B, KB, MB, GB
+int ThreadCount = 1; // How many threads to run (How many files to generate)
+std::vector<std::future<void>> futures; // Futures returned by std::async
+
+#pragma endregion
+
+#pragma region Functions
 
 /*
 Clears the console
@@ -28,31 +32,80 @@ void clear() {
 	std::cout << "\x1B[2J\x1B[H";
 }
 
-/*
-Writes asynchronously to a file using mutexes
-@param	std::mutex&	mut:	mutex reference
-@param	std::ofstream&	file:	file to write to
-@param	std::string	write:	string to write in file
-*/
-static void WriteToFile_Async(std::mutex& mut, std::ofstream& file, std::string write) {
-	std::lock_guard<std::mutex> lock(mut);
-	file << write;
+
+void WriteToFile_Multi(int FileNum, std::string FileName) {
+	std::ofstream File;
+
+	File.open(FileName + std::to_string(FileNum));
+
+	switch (SizeMode)
+	{
+
+	case 0:
+		for (int i = 0; i < std::stoi(Size); i++) {
+			File << "a";
+		}
+
+		std::cout << "Done!\n" << std::stoi(Size) << " B\n\n";
+		File.close();
+		break;
+
+	case 1:
+		for (int i = 0; i < std::stoi(Size) * 1024; i++) {
+			File << "a";
+		}
+
+		std::cout << "Done!\n" << std::stoi(Size) * 1024 << " B\n\n";
+		File.close();
+		break;
+
+	case 2:
+		for (int i = 0; i < std::stoi(Size) * 1048576; i++) {
+			File << "a";
+		}
+
+		std::cout << "Done!\n" << std::stoi(Size) * 1048576 << " B\n\n";
+		File.close();
+		break;
+
+	case 3:
+		for (int i = 0; i < std::stoi(Size) * 1073741824; i++) {
+			File << "a";
+		}
+
+		std::cout << "Done!\n" << std::stoi(Size) * 1073741824 << " B\n\n";
+		File.close();
+		break;
+
+	default:
+		std::cerr << "\aERROR!";
+		File.close();
+		exit(4);
+		break;
+	}
+
 }
+
+
+#pragma endregion
 
 int main(int argc, char* argv[]) {
 
 	// Parse arguments
 	for (int i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "-S") == 0) {
+		if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "-S") == 0 || strcmp(argv[i], "--size") == 0) {
 			Size = argv[i + 1];
 		}
-		else if (strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "-F") == 0) {
+		else if (strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "-F") == 0 || strcmp(argv[i], "--file") == 0) {
 			FileName = argv[i + 1];
+		}
+		else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "-T") == 0 || strcmp(argv[i], "--threads") == 0) {
+			ThreadCount = atoi(argv[i + 1]);
 		}
 	}
 
 	
-
+	// Determine size
 	if (Size != "" || Size != " ") {
 		if (Size.back() == 'B') {
 			SizeMode = 0;
@@ -74,84 +127,75 @@ int main(int argc, char* argv[]) {
 		SizeMode = 2;
 	}
 
+	if (ThreadCount != 1) {
+		std::cout << "Multi-Threaded\n";
+		// Multi threaded code
+		// Start threads
 
-	File.open(FileName);
-	
-	switch (SizeMode)
-	{
+		for (int i = 0; i < ThreadCount; i++) {
 
-	case 0:
-		/*for (int i = 0; i < std::stoi(Size); i++) { // Not Multithreaded!
-			File << "a";
-		}*/
+				futures.push_back(std::async(std::launch::async, [i]() {
 
-		for (int i = 0; i < std::stoi(Size); i++) {
-			futures.push_back(std::async(std::launch::async, []() {
-				
-				WriteToFile_Async(FileMutex, File, "a");
+				WriteToFile_Multi(i, FileName);
 
-			}));
+				}));
+
 		}
-
-		std::cout << "Done!\n" << std::stoi(Size) << " B\n";
-		File.close();
-		break;
-
-	case 1:
-		/*for (int i = 0; i < std::stoi(Size)*1024; i++) { // Not Multithreaded!
-			File << "a";
-		}*/
-
-		for (int i = 0; i < std::stoi(Size) * 1024; i++) {
-			futures.push_back(std::async(std::launch::async, []() {
-
-				WriteToFile_Async(FileMutex, File, "a");
-
-			}));
-		}
-
-		std::cout << "Done!\n" << std::stoi(Size)*1024 << " B\n";
-		File.close();
-		break;
-
-	case 2:
-		/*for (int i = 0; i < std::stoi(Size) * 1048576; i++) { // Not Multithreaded!
-			File << "a";
-		}*/
-
-		for (int i = 0; i < std::stoi(Size) * 1048576; i++) {
-			futures.push_back(std::async(std::launch::async, []() {
-
-				WriteToFile_Async(FileMutex, File, "a");
-
-			}));
-		}
-
-		std::cout << "Done!\n" << std::stoi(Size) * 1048576 << " B\n";
-		File.close();
-		break;
-
-	case 3:
-		/*for (int i = 0; i < std::stoi(Size) * 1073741824; i++) { // Not Multithreaded
-			File << "a";
-		}*/
-
-		for (int i = 0; i < std::stoi(Size) * 1073741824; i++) {
-			futures.push_back(std::async(std::launch::async, []() {
-
-				WriteToFile_Async(FileMutex, File, "a");
-
-			}));
-		}
-
-		std::cout << "Done!\n" << std::stoi(Size) * 1073741824 << " B\n";
-		File.close();
-		break;
-
-	default:
-		std::cerr << "\aERROR!";
-		exit(4);
-		break;
 	}
+	else {
+
+		std::cout << "Single-threaded\n";
+
+		std::ofstream File;
+
+		File.open(FileName);
+	
+		switch (SizeMode)
+		{
+
+		case 0:
+			for (int i = 0; i < std::stoi(Size); i++) {
+				File << "a";
+			}
+
+			std::cout << "Done!\n" << std::stoi(Size) << " B\n\n";
+			File.close();
+			break;
+
+		case 1:
+			for (int i = 0; i < std::stoi(Size)*1024; i++) {
+				File << "a";
+			}
+
+			std::cout << "Done!\n" << std::stoi(Size)*1024 << " B\n\n";
+			File.close();
+			break;
+
+		case 2:
+			for (int i = 0; i < std::stoi(Size) * 1048576; i++) {
+				File << "a";
+			}
+
+			std::cout << "Done!\n" << std::stoi(Size) * 1048576 << " B\n\n";
+			File.close();
+			break;
+
+		case 3:
+			for (int i = 0; i < std::stoi(Size) * 1073741824; i++) {
+				File << "a";
+			}
+
+			std::cout << "Done!\n" << std::stoi(Size) * 1073741824 << " B\n\n";
+			File.close();
+			break;
+
+		default:
+			std::cerr << "\aERROR!";
+			File.close();
+			exit(4);
+			break;
+		}
+	}
+
 	exit(0);
 }
