@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	
+
 	// Determine size
 	if (Size != "" || Size != " ") {
 		if (Size.back() == 'B') {
@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
 
 		for (int i = 0; i < ThreadCount; i++) {
 
-				futures.push_back(std::async(std::launch::async, [i]() {
+			futures.push_back(std::async(std::launch::async, [i]() {
 
 				WriteToFile_Multi(i, FileName);
 
@@ -148,7 +148,7 @@ int main(int argc, char* argv[]) {
 		std::ofstream File;
 
 		File.open(FileName);
-	
+
 		switch (SizeMode)
 		{
 
@@ -162,11 +162,11 @@ int main(int argc, char* argv[]) {
 			break;
 
 		case 1:
-			for (int i = 0; i < std::stoi(Size)*1024; i++) {
+			for (int i = 0; i < std::stoi(Size) * 1024; i++) {
 				File << "a";
 			}
 
-			std::cout << "Done!\n" << std::stoi(Size)*1024 << " B\n\n";
+			std::cout << "Done!\n" << std::stoi(Size) * 1024 << " B\n\n";
 			File.close();
 			break;
 
