@@ -5,6 +5,7 @@
 #include <cstring>
 #include <fstream>
 #include <future>
+#include <random>
 
 // If using msvc DO NOT include pthread.h, since its a UNIX only header
 #ifndef MSVC
@@ -45,12 +46,16 @@ void WriteToFile_Multi(int FileNum, std::string FileName) {
 
 	File.open(FileName + std::to_string(FileNum));
 
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> distr(65, 122);
+
 	switch (SizeMode)
 	{
 
 	case 0:
 		for (int i = 0; i < std::stoi(Size); i++) {
-			File << "a";
+			File << (char)distr(gen);
 		}
 
 		std::cout << "Done!\n" << std::stoi(Size) << " B\n\n";
@@ -59,7 +64,7 @@ void WriteToFile_Multi(int FileNum, std::string FileName) {
 
 	case 1:
 		for (int i = 0; i < std::stoi(Size) * 1024; i++) {
-			File << "a";
+			File << (char)distr(gen);
 		}
 
 		std::cout << "Done!\n" << std::stoi(Size) * 1024 << " B\n\n";
@@ -68,7 +73,7 @@ void WriteToFile_Multi(int FileNum, std::string FileName) {
 
 	case 2:
 		for (int i = 0; i < std::stoi(Size) * 1048576; i++) {
-			File << "a";
+			File << (char)distr(gen);
 		}
 
 		std::cout << "Done!\n" << std::stoi(Size) * 1048576 << " B\n\n";
@@ -77,7 +82,7 @@ void WriteToFile_Multi(int FileNum, std::string FileName) {
 
 	case 3:
 		for (int i = 0; i < std::stoi(Size) * 1073741824; i++) {
-			File << "a";
+			File << (char)distr(gen);
 		}
 
 		std::cout << "Done!\n" << std::stoi(Size) * 1073741824 << " B\n\n";
@@ -157,12 +162,16 @@ int main(int argc, char* argv[]) {
 
 		File.open(FileName);
 
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_int_distribution<> distr(65, 122);
+
 		switch (SizeMode)
 		{
 
 		case 0:
 			for (int i = 0; i < std::stoi(Size); i++) {
-				File << "a";
+				File << (char)distr(gen);
 			}
 
 			std::cout << "Done!\n" << std::stoi(Size) << " B\n\n";
@@ -171,7 +180,7 @@ int main(int argc, char* argv[]) {
 
 		case 1:
 			for (int i = 0; i < std::stoi(Size) * 1024; i++) {
-				File << "a";
+				File << (char)distr(gen);
 			}
 
 			std::cout << "Done!\n" << std::stoi(Size) * 1024 << " B\n\n";
@@ -180,7 +189,7 @@ int main(int argc, char* argv[]) {
 
 		case 2:
 			for (int i = 0; i < std::stoi(Size) * 1048576; i++) {
-				File << "a";
+				File << (char)distr(gen);
 			}
 
 			std::cout << "Done!\n" << std::stoi(Size) * 1048576 << " B\n\n";
@@ -189,7 +198,7 @@ int main(int argc, char* argv[]) {
 
 		case 3:
 			for (int i = 0; i < std::stoi(Size) * 1073741824; i++) {
-				File << "a";
+				File << (char)distr(gen);
 			}
 
 			std::cout << "Done!\n" << std::stoi(Size) * 1073741824 << " B\n\n";

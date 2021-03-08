@@ -6,7 +6,7 @@ if (MSVC)
 	add_compile_definitions(MSVC)
 
 else()
-	add_link_options(-pthread)
+	add_link_options(-pthread -O2)
 
 endif()
 
