@@ -14,5 +14,5 @@ This app fills a file with the \`a\` character up to a certain given file size.
 
 - [x] File Sizes
 - [x] Multithreading 
-- [ ] Linux Support
-- [ ] Switch to CMake
+- [x] Linux Support
+- [x] Switch to CMake
