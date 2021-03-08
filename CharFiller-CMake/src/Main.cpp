@@ -5,6 +5,12 @@
 #include <cstring>
 #include <fstream>
 #include <future>
+
+// If using msvc DO NOT include pthread.h, since its a UNIX only header
+#ifndef MSVC
+	#include <pthread.h>
+#endif // !MSVC
+
 #include <vector>
 #include <thread>
 
