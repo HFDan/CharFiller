@@ -2,8 +2,10 @@
 
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <fstream>
 #include <future>
+#include <vector>
 #include <thread>
 
 using string = std::string;
