@@ -10,4 +10,6 @@ else()
 
 endif()
 
-add_subdirectory(src)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Binaries")
+
+add_executable(CharFiller "src/Main.cpp" "src/UI/ProgressBar/ProgressBar.h" "src/UI/ProgressBar/ProgressBar.cpp")

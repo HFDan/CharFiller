@@ -23,7 +23,7 @@ enum SizeMode {
 
 #pragma region Varaibles
 
-std::string Size; // File size
+std::string Size = "1"; // File size
 std::string FileName = "CharFiller_Output.txt"; // Name of file to write
 unsigned int SizeMode; // B, KB, MB, GB
 int ThreadCount = 1; // How many threads to run (How many files to generate)
@@ -41,11 +41,42 @@ void clear() {
 }
 
 
-void WriteToFile_Multi(int FileNum, std::string FileName) {
+void WriteToFile(int FileNum, std::string FileName, bool MultiThread) {
 	std::ofstream File;
 
-	File.open(FileName + std::to_string(FileNum));
+	#pragma region Tokenisation
 
+	std::string FileNameTemp = FileName;
+	std::string delimiter = ".";
+	size_t pos = 0;
+	std::string token;
+	std::vector<std::string> StringVect;
+
+	while ((pos = FileNameTemp.find(delimiter)) != std::string::npos) {
+		token = FileNameTemp.substr(0, pos);
+		StringVect.push_back(token);
+		FileNameTemp.erase(0, pos + delimiter.length());
+	}
+	std::string Extension = FileNameTemp;
+
+	std::string FileNameNoExt;
+	for (auto i : StringVect) {
+		FileNameNoExt = FileNameNoExt + i;
+	}
+
+	#pragma endregion
+
+	// Check if multithreaded
+	if (MultiThread) {
+		File.open(FileNameNoExt + std::to_string(FileNum) + "." + Extension);
+	}
+	else
+	{
+		File.open(FileNameNoExt + Extension);
+	}
+
+
+	// Generate random number for file name
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_int_distribution<> distr(65, 122);
@@ -118,7 +149,7 @@ int main(int argc, char* argv[]) {
 
 
 	// Determine size
-	if (Size != "" || Size != " ") {
+	if (!Size.empty()) {
 		if (Size.back() == 'B') {
 			SizeMode = 0;
 		}
@@ -132,14 +163,14 @@ int main(int argc, char* argv[]) {
 			SizeMode = 3;
 		}
 		else {
-			SizeMode = 2;
+			SizeMode = 1;
 		}
 	}
 	else {
-		SizeMode = 2;
+		SizeMode = 1;
 	}
 
-	if (ThreadCount != 1) {
+	if (ThreadCount > 1) {
 		std::cout << "Multi-Threaded\n";
 		// Multi threaded code
 		// Start threads
@@ -148,69 +179,17 @@ int main(int argc, char* argv[]) {
 
 			futures.push_back(std::async(std::launch::async, [i]() {
 
-				WriteToFile_Multi(i, FileName);
+				WriteToFile(i, FileName, true);
 
-				}));
+			}));
 
 		}
 	}
 	else {
-
+		
 		std::cout << "Single-threaded\n";
 
-		std::ofstream File;
-
-		File.open(FileName);
-
-		std::random_device rd;
-		std::mt19937 gen(rd());
-		std::uniform_int_distribution<> distr(65, 122);
-
-		switch (SizeMode)
-		{
-
-		case 0:
-			for (int i = 0; i < std::stoi(Size); i++) {
-				File << (char)distr(gen);
-			}
-
-			std::cout << "Done!\n" << std::stoi(Size) << " B\n\n";
-			File.close();
-			break;
-
-		case 1:
-			for (int i = 0; i < std::stoi(Size) * 1024; i++) {
-				File << (char)distr(gen);
-			}
-
-			std::cout << "Done!\n" << std::stoi(Size) * 1024 << " B\n\n";
-			File.close();
-			break;
-
-		case 2:
-			for (int i = 0; i < std::stoi(Size) * 1048576; i++) {
-				File << (char)distr(gen);
-			}
-
-			std::cout << "Done!\n" << std::stoi(Size) * 1048576 << " B\n\n";
-			File.close();
-			break;
-
-		case 3:
-			for (int i = 0; i < std::stoi(Size) * 1073741824; i++) {
-				File << (char)distr(gen);
-			}
-
-			std::cout << "Done!\n" << std::stoi(Size) * 1073741824 << " B\n\n";
-			File.close();
-			break;
-
-		default:
-			std::cerr << "\aERROR!";
-			File.close();
-			exit(4);
-			break;
-		}
+		WriteToFile(NULL, FileName, false);
 	}
 
 	exit(0);
