@@ -1,6 +1,6 @@
 # CharFiller
 
-This app fills a file with the \`a\` character up to a certain given file size.
+This app fills a file with a random character up to a certain given file size.
 
 ## Usage
 
