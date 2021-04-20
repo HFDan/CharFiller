@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <random>
+#include <chrono>
 
 void WriteToFile(int FileNum, std::string FileName, bool MultiThread, unsigned int& SizeMode, std::string& Size, bool Random, char CharToFill) {
 	std::ofstream File;
@@ -29,65 +30,92 @@ void WriteToFile(int FileNum, std::string FileName, bool MultiThread, unsigned i
 
 #pragma endregion
 
+
 	// Check if multithreaded
 	if (MultiThread) {
 		File.open(FileNameNoExt + std::to_string(FileNum) + "." + Extension);
 	}
 	else
 	{
-		File.open(FileNameNoExt + Extension);
+		File.open(FileNameNoExt + "." + Extension);
 	}
 
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distr(65, 122);
 
-	// Generate random number for file name
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::uniform_int_distribution<> distr(65, 122);
+    auto start = std::chrono::high_resolution_clock::now();
 
-	switch (SizeMode)
-	{
+        switch (SizeMode) {
+            case 0:
+                for (int i = 0; i < std::stoi(Size); i++) {
+                    if (Random)
+                        File << (char)distr(gen);
+                    else
+                        File << CharToFill;
+                }
+                File.close();
+                {
+                    std::chrono::duration<double> duration = std::chrono::high_resolution_clock::now() - start;
+                    printf("Done!\n %i B in %f seconds\n\n", std::stoi(Size), duration.count());
+                    fflush(stdout);
+                }
+                break;
 
-	case 0:
-		for (int i = 0; i < std::stoi(Size); i++) {
-			File << (char)distr(gen);
-		}
+            case 1:
+                for (int i = 0; i < std::stoi(Size) * 1024; i++) {
+                    if (Random)
+                        File << (char)distr(gen);
+                    else
+                        File << CharToFill;
+                }
+                File.close();
+                {
+                    std::chrono::duration<double> duration = std::chrono::high_resolution_clock::now() - start;
+                    printf("Done!\n %i B in %f seconds\n\n", std::stoi(Size) * 1024, duration.count());
+                    fflush(stdout);
+                }
+                break;
 
-		std::cout << "Done!\n" << std::stoi(Size) << " B\n\n";
-		File.close();
-		break;
+            case 2:
+                for (int i = 0; i < std::stoi(Size) * 1048576; i++) {
+                    if (Random)
+                        File << (char)distr(gen);
+                    else
+                        File << CharToFill;
+                }
 
-	case 1:
-		for (int i = 0; i < std::stoi(Size) * 1024; i++) {
-			File << (char)distr(gen);
-		}
+                File.close();
 
-		std::cout << "Done!\n" << std::stoi(Size) * 1024 << " B\n\n";
-		File.close();
-		break;
+                {
+                    std::chrono::duration<double> duration = std::chrono::high_resolution_clock::now() - start;
+                    printf("Done!\n %i B in %f seconds\n\n", std::stoi(Size) * 1048576, duration.count());
+                    fflush(stdout);
+                }
+                break;
 
-	case 2:
-		for (int i = 0; i < std::stoi(Size) * 1048576; i++) {
-			File << (char)distr(gen);
-		}
+            case 3:
+                for (int i = 0; i < std::stoi(Size) * 1073741824; i++) {
+                    if (Random)
+                        File << (char)distr(gen);
+                    else
+                        File << CharToFill;
+                }
+                File.close();
 
-		std::cout << "Done!\n" << std::stoi(Size) * 1048576 << " B\n\n";
-		File.close();
-		break;
+                {
+                    std::chrono::duration<double> duration = std::chrono::high_resolution_clock::now() - start;
+                    printf("Done!\n %i B in %f seconds\n\n", std::stoi(Size) * 1073741824, duration.count());
+                    fflush(stdout);
+                }
 
-	case 3:
-		for (int i = 0; i < std::stoi(Size) * 1073741824; i++) {
-			File << (char)distr(gen);
-		}
+                break;
 
-		std::cout << "Done!\n" << std::stoi(Size) * 1073741824 << " B\n\n";
-		File.close();
-		break;
-
-	default:
-		std::cerr << "\aERROR!";
-		File.close();
-		exit(4);
-		break;
-	}
+            default:
+                std::cerr << "\aERROR!";
+                File.close();
+                exit(4);
+                break;
+        }
 
 }

@@ -5,12 +5,13 @@
 #include <cstring>
 #include <fstream>
 #include <future>
+#include <chrono>
 #include <random>
 
 // If using msvc DO NOT include pthread.h, since its a UNIX only header
-#ifndef MSVC
+#ifdef UNIX
 	#include <pthread.h>
-#endif // !MSVC
+#endif // !UNIX
 
 #include <vector>
 #include <thread>
@@ -29,6 +30,8 @@ std::string FileName = "CharFiller_Output.txt"; // Name of file to write
 unsigned int SizeMode; // B, KB, MB, GB
 int ThreadCount = 1; // How many threads to run (How many files to generate)
 std::vector<std::future<void>> futures; // Futures returned by std::async
+bool Random = true; // Should fill with random characters or not
+std::string Char = "a"; // Char to fill with
 
 #pragma endregion
 
@@ -57,6 +60,12 @@ int main(int argc, char* argv[]) {
 		else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "-T") == 0 || strcmp(argv[i], "--threads") == 0) {
 			ThreadCount = atoi(argv[i + 1]);
 		}
+		else if (strcmp(argv[i], "-nr") == 0 || strcmp(argv[i], "-NR") == 0 || strcmp(argv[i], "--no-random") == 0) {
+			Random = false;
+		}
+		else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "-C") == 0 || strcmp(argv[i], "--character") == 0) {
+			Char = argv[i + 1];
+		}
 	}
 
 
@@ -82,8 +91,9 @@ int main(int argc, char* argv[]) {
 		SizeMode = 1;
 	}
 
+
 	if (ThreadCount > 1) {
-		std::cout << "Multi-Threaded\n";
+		std::cout << "Multi-Threaded\n\n";
 		// Multi threaded code
 		// Start threads
 
@@ -91,7 +101,7 @@ int main(int argc, char* argv[]) {
 
 			futures.push_back(std::async(std::launch::async, [i]() {
 
-				WriteToFile(i, FileName, true, SizeMode, Size, true, NULL);
+				WriteToFile(i, FileName, true, SizeMode, Size, Random, Char[0]);
 
 			}));
 
@@ -99,9 +109,9 @@ int main(int argc, char* argv[]) {
 	}
 	else {
 		
-		std::cout << "Single-threaded\n";
+		std::cout << "Single-threaded\n\n";
 
-		WriteToFile(NULL, FileName, false, SizeMode, Size, true, NULL);
+		WriteToFile(NULL, FileName, false, SizeMode, Size, Random, Char[0]);
 	}
 
 	exit(0);

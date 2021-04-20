@@ -2,12 +2,9 @@ cmake_minimum_required(VERSION 3.8)
 
 project (CharFiller)
 
-if (MSVC)
-	add_compile_definitions(MSVC)
-
-else()
+if (UNIX)
+	add_compile_definitions(UNIX)
 	add_link_options(-pthread -O2)
-
 endif()
 
 
