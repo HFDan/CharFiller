@@ -4,11 +4,15 @@ This app fills a file with a random character up to a certain given file size.
 
 ## Usage
 
-`-F [Filename]`
+`-F` `[Filename]`
 
-`-S [Size]`
+`-S` `[Size]`
 
-`-T [Thread Number]`
+`-T` `[Thread Number]`
+
+`-NR` Non-random
+
+`-C` `[Character to fill with]` <- Only usable with `-NR`
 
 # Roadmap
 
