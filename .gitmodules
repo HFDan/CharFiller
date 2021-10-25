@@ -1,0 +1,3 @@
+[submodule "src/lib/thirdparty/argparse"]
+	path = src/lib/thirdparty/argparse
+	url = https://github.com/jamolnng/argparse.git

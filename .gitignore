@@ -12,3 +12,6 @@ _deps
 out/
 .vs/
 .idea/
+build/
+.cache/clangd/
+compile_commands.json

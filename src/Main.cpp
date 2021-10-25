@@ -1,118 +1,88 @@
-#define VERSION "0.1.0"
-
-#include <iostream>
-#include <string>
-#include <cstring>
-#include <fstream>
+#include <cstdio>
 #include <future>
-#include <chrono>
-#include <random>
+#include <vector>
+#include <thread>
 
 // If using msvc DO NOT include pthread.h, since its a UNIX only header
 #ifdef UNIX
-	#include <pthread.h>
+#include <pthread.h>
 #endif // !UNIX
 
-#include <vector>
-#include <thread>
-#include "Util/Files/Files.h"
+#include "Files/Files.h"
+#include "thirdparty/argparse/argparse.h"
 
-using string = std::string;
+using namespace argparse;
 
-enum SizeMode {
-	B = 0, KB = 1, MB = 2, GB = 3
-};
+int main(int argc, const char **argv) {
+	unsigned int SizeMode = 0; // To make clang-tidy shut up
 
-#pragma region Varaibles
+	ArgumentParser parser("CharFiller", "A console app to create files");
+	parser.add_argument("-f", "--file", "The name of the file", true);
+	parser.add_argument("-t", "--threads", "Amount of *IDENTICAL FILES* to create", false);
+	parser.add_argument("-s", "--size", "Desired file-size", true);
+	parser.add_argument("-n", "--norandom", "Generate the file without random contents", false);
+	parser.add_argument("-d", "--debug", "Enables debug mode", false);
+	parser.add_argument("-c", "--char", "*ONLY USABLE WITH -n*, the character to fill the file with", false);
+	parser.enable_help();
 
-std::string Size = "1"; // File size
-std::string FileName = "CharFiller_Output.txt"; // Name of file to write
-unsigned int SizeMode; // B, KB, MB, GB
-int ThreadCount = 1; // How many threads to run (How many files to generate)
-std::vector<std::future<void>> futures; // Futures returned by std::async
-bool Random = true; // Should fill with random characters or not
-std::string Char = "a"; // Char to fill with
+	auto parseError = parser.parse(argc, argv);
 
-#pragma endregion
-
-#pragma region Functions
-
-/*
-Clears the console
-*/
-void clear() {
-	std::cout << "\x1B[2J\x1B[H";
-}
-
-
-#pragma endregion
-
-int main(int argc, char* argv[]) {
-
-	// Parse arguments
-	for (int i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "-S") == 0 || strcmp(argv[i], "--size") == 0) {
-			Size = argv[i + 1];
-		}
-		else if (strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "-F") == 0 || strcmp(argv[i], "--file") == 0) {
-			FileName = argv[i + 1];
-		}
-		else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "-T") == 0 || strcmp(argv[i], "--threads") == 0) {
-			ThreadCount = atoi(argv[i + 1]);
-		}
-		else if (strcmp(argv[i], "-nr") == 0 || strcmp(argv[i], "-NR") == 0 || strcmp(argv[i], "--no-random") == 0) {
-			Random = false;
-		}
-		else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "-C") == 0 || strcmp(argv[i], "--character") == 0) {
-			Char = argv[i + 1];
-		}
+	if (parseError) {
+		fprintf(stderr, "%s\n", parseError.what().c_str());
+		return -1;
 	}
 
+	if (parser.exists("h")) {
+		parser.print_help();
+		return 0;
+	}
 
-	// Determine size
-	if (!Size.empty()) {
-		if (Size.back() == 'B') {
+	// NOTE: ONLY FOR DEBUGGING PURPOSES!
+	printf("-f: %s\n"
+			"-t: %i\n"
+			"-s: %s\n"
+			"-nR: %i\n"
+			"-d: %i\n"
+			"-c: %c\n", parser.get<std::string>("f").c_str(), parser.get<int>("t"), parser.get<std::string>("s").c_str(), parser.exists("n"), parser.exists("d"), parser.get<char>("c"));
+
+	switch(parser.get<std::string>("s").back()) {
+		case 'B':
 			SizeMode = 0;
-		}
-		else if (Size.back() == 'K') {
+			break;
+
+		case 'K':
 			SizeMode = 1;
-		}
-		else if (Size.back() == 'M') {
+			break;
+
+		case 'M':
 			SizeMode = 2;
-		}
-		else if (Size.back() == 'G') {
+			break;
+
+		case 'G':
 			SizeMode = 3;
-		}
-		else {
-			SizeMode = 1;
-		}
-	}
-	else {
-		SizeMode = 1;
+			break;
+
+		default:
+			fprintf(stderr, "Error when determining file size!\n");
 	}
 
+	printf("SizeMode: %i\n", SizeMode);
 
-	if (ThreadCount > 1) {
-		std::cout << "Multi-Threaded\n\n";
-		// Multi threaded code
-		// Start threads
+	// NOTE: Everything after this point is a fucking mess. I have no idea what it does so i will
+	// rewrite it when i have the time.
+	// if (parser.exists("t")) {
+	// 	std::vector<std::future<void>> futures;
+	// 	for (int i = 0; i < parser.get<int>("t"); i++) {
+	// 		futures.push_back(std::async(std::launch::async, [&]() -> void {
+	// 			WriteToFile(i, parser.get<std::string>("f"), true,
+	// 					   SizeMode, parser.get<std::string>("s"), !parser.exists("n"), parser.get<char>("c"));
+	// 		}));
+	// 	}
+	// } else {
+	// 	printf("ST\n");
+	// 	WriteToFile(NULL, parser.get<std::string>("f"), parser.exists("t"),
+	// 				SizeMode, parser.get<std::string>("s"), !parser.exists("nR"), parser.get<char>("c"));
+	// }
 
-		for (int i = 0; i < ThreadCount; i++) {
-
-			futures.push_back(std::async(std::launch::async, [i]() {
-
-				WriteToFile(i, FileName, true, SizeMode, Size, Random, Char[0]);
-
-			}));
-
-		}
-	}
-	else {
-		
-		std::cout << "Single-threaded\n\n";
-
-		WriteToFile(NULL, FileName, false, SizeMode, Size, Random, Char[0]);
-	}
-
-	exit(0);
+	return 0;
 }

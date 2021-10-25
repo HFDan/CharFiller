@@ -5,7 +5,10 @@
 #include <random>
 #include <chrono>
 
-void WriteToFile(int FileNum, std::string FileName, bool MultiThread, unsigned int& SizeMode, std::string& Size, bool Random, char CharToFill) {
+[[deprecated ("Old Function, from before the v2.0 rewrite")]]
+void WriteToFile(int FileNum, std::string FileName, bool MultiThread,
+				unsigned int& SizeMode, std::string Size, bool Random, char CharToFill) {
+
 	std::ofstream File;
 
 #pragma region Tokenisation
@@ -119,3 +122,6 @@ void WriteToFile(int FileNum, std::string FileName, bool MultiThread, unsigned i
         }
 
 }
+
+// [[maybe_unused]]
+// int writeToFileN(int FileNum, std::string FileName,)
