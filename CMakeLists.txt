@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (UNIX)
 	add_compile_definitions(UNIX)
-	add_link_options(-pthread -O2)
+	add_link_options(-pthread)
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Binaries")

@@ -1,4 +1,4 @@
 set(LIBCHARFILLER_SOURCES
-	"Files/Files.cpp"
-	"Files/Files.h")
+	"libcharfiller/Files/Files.cpp"
+	"libcharfiller/Files/Files.h")
 add_library(libcharfiller STATIC ${LIBCHARFILLER_SOURCES})

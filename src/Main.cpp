@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <future>
 #include <vector>
+#include <utility>
 #include <thread>
 
 // If using msvc DO NOT include pthread.h, since its a UNIX only header
@@ -8,7 +9,7 @@
 #include <pthread.h>
 #endif // !UNIX
 
-#include "Files/Files.h"
+#include "libcharfiller/Files/Files.h"
 #include "thirdparty/argparse/argparse.h"
 
 using namespace argparse;
@@ -38,51 +39,32 @@ int main(int argc, const char **argv) {
 	}
 
 	// NOTE: ONLY FOR DEBUGGING PURPOSES!
-	printf("-f: %s\n"
-			"-t: %i\n"
-			"-s: %s\n"
-			"-nR: %i\n"
-			"-d: %i\n"
-			"-c: %c\n", parser.get<std::string>("f").c_str(), parser.get<int>("t"), parser.get<std::string>("s").c_str(), parser.exists("n"), parser.exists("d"), parser.get<char>("c"));
+	if (parser.exists("d"))
+		printf("Interpreted arguments: "
+				"-f: %s\n"
+				"-t: %i\n"
+				"-s: %s\n"
+				"-n: %s\n"
+				"-d: %s\n"
+				"-c: %c\n", parser.get<std::string>("f").c_str(), parser.get<int>("t"), parser.get<std::string>("s").c_str(), parser.exists("n") ? "true" : "false", parser.exists("d") ? "true" : "false", parser.get<char>("c"));
 
-	switch(parser.get<std::string>("s").back()) {
-		case 'B':
-			SizeMode = 0;
-			break;
+	if (parser.exists("d"))
+		printf("SizeMode: %i\n", SizeMode);
 
-		case 'K':
-			SizeMode = 1;
-			break;
+	// NOTE: Everything after this point is a fucking mess. I have no idea why it segfaults
+	// FIXME: This code always segfaults when reaching 'futures.push_back()'
 
-		case 'M':
-			SizeMode = 2;
-			break;
-
-		case 'G':
-			SizeMode = 3;
-			break;
-
-		default:
-			fprintf(stderr, "Error when determining file size!\n");
+	if (parser.exists("t")) {
+		std::vector<std::future<std::pair<int, double>>> futures;
+		for (int i = 0; i < parser.get<int>("t"); i++) {
+			futures.push_back(std::async(std::launch::async, [&]() -> std::pair<int, double> {
+				return WriteToFileN(true, i, parser.get<std::string>("n"), parser.get<std::string>("s"), !parser.exists("n"), parser.get<char>("c"));
+			}));
+		}
+	} 
+	else {
+		auto op = WriteToFileN(parser.get<std::string>("f"), parser.get<std::string>("s"), !parser.exists("n"), parser.get<char>("c"));
 	}
-
-	printf("SizeMode: %i\n", SizeMode);
-
-	// NOTE: Everything after this point is a fucking mess. I have no idea what it does so i will
-	// rewrite it when i have the time.
-	// if (parser.exists("t")) {
-	// 	std::vector<std::future<void>> futures;
-	// 	for (int i = 0; i < parser.get<int>("t"); i++) {
-	// 		futures.push_back(std::async(std::launch::async, [&]() -> void {
-	// 			WriteToFile(i, parser.get<std::string>("f"), true,
-	// 					   SizeMode, parser.get<std::string>("s"), !parser.exists("n"), parser.get<char>("c"));
-	// 		}));
-	// 	}
-	// } else {
-	// 	printf("ST\n");
-	// 	WriteToFile(NULL, parser.get<std::string>("f"), parser.exists("t"),
-	// 				SizeMode, parser.get<std::string>("s"), !parser.exists("nR"), parser.get<char>("c"));
-	// }
 
 	return 0;
 }
