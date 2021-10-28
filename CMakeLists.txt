@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (UNIX)
 	add_compile_definitions(UNIX)
-	add_link_options(-pthread)
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Binaries")
@@ -21,4 +20,7 @@ set(ARGPARSE_BUILD_EXAMPLE OFF CACHE BOOL "Build example" FORCE)
 add_executable(CharFiller "src/Main.cpp")
 set_target_properties(CharFiller PROPERTIES PREFIX "${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR}_")
 target_include_directories(CharFiller PRIVATE "${PROJECT_SOURCE_DIR}/src/lib")
-target_link_libraries(CharFiller PRIVATE libcharfiller PRIVATE argparse)
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(CharFiller PUBLIC Threads::Threads PRIVATE libcharfiller PRIVATE argparse)
